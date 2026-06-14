@@ -5,6 +5,7 @@ GENERATOR_IMAGE="hw-generator"
 ANALYZER_IMAGE="hw-analyzer"
 DATA_DIR="$(pwd)/data"
 LOCAL_DATA_DIR="$(pwd)/local_data"
+REPORT_PORT="8080"
 
 case "${1:-}" in
   build_generator)
@@ -38,7 +39,14 @@ case "${1:-}" in
     mkdir -p "$DATA_DIR"
     docker run --rm -v "$DATA_DIR:/data" "$ANALYZER_IMAGE" ls -la /data;;
 
+  report_server)
+    if [ ! -f "$DATA_DIR/report.html" ]; then
+      exit 1
+    fi
+    docker run --rm --name hw-report-server -p "$REPORT_PORT:80" \
+      -v "$DATA_DIR/report.html:/usr/share/nginx/html/index.html:ro" nginx;;
+
   *)
-    echo "Usage: $0 {build_generator|run_generator|create_local_data|build_reporter|run_reporter|structure|clear_data|inside_generator|inside_reporter}"
+    echo "Usage: $0 {build_generator|run_generator|create_local_data|build_reporter|run_reporter|structure|clear_data|inside_generator|inside_reporter|report_server}"
     exit 1;;
 esac
